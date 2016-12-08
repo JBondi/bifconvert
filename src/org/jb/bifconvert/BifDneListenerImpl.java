@@ -1,7 +1,17 @@
 package org.jb.bifconvert;
 
+import java.io.StringWriter;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.jb.bifconvert.generated.BifDneBaseListener;
 import org.jb.bifconvert.generated.BifDneParser;
@@ -33,6 +43,13 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 		rootBif.getAttributes().setNamedItemNS(xsiAtt);
 		rootBif.getAttributes().setNamedItemNS(schemaLocationAtt);				
 	}
+
+	@Override
+	public void exitAssignment(BifDneParser.AssignmentContext ctx){
+		if(ctx.ID().getText().equals("functable")){
+			System.out.println(ctx.fullValue().getText());
+		}
+	}
 	
 	@Override
 	public void exitStruct(BifDneParser.StructContext ctx) {
@@ -41,6 +58,29 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 			Node nameNode = xmlBifDoc.createElement("NAME");
 			nameNode.setTextContent(ctx.ID(1).getText());
 			netNode.appendChild(nameNode);
+			rootBif.appendChild(netNode);
+			
+			for(BifDneParser.AssignmentContext asCtx : ctx.assignment()){
+				Node propNode = xmlBifDoc.createElement("PROPERTY");
+				propNode.setTextContent(asCtx.getText());
+				netNode.appendChild(propNode);
+			}
+			xmlBifDoc.appendChild(rootBif);
+			Transformer transformer;
+			try {
+				transformer = TransformerFactory.newInstance().newTransformer();
+				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+				//initialize StreamResult with File object to save to file
+				StreamResult result = new StreamResult(new StringWriter());
+				DOMSource source = new DOMSource(xmlBifDoc);
+				transformer.transform(source, result);
+				String xmlString = result.getWriter().toString();
+				System.out.println(xmlString);	
+			} catch (TransformerFactoryConfigurationError | TransformerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
