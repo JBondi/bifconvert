@@ -45,7 +45,7 @@
 	            </goals>
 	            <configuration>
 	                <sourceDirectory>${project.basedir}/src/grammar</sourceDirectory>
-	                <outputDirectory>${project.build.directory}</outputDirectory>
+	                <outputDirectory>${project.build.directory}/generated-sources/org/jb/bifconvert/generated</outputDirectory>
 	            </configuration>
 	          </execution>
 	        </executions>
