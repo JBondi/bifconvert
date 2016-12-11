@@ -7,7 +7,13 @@
 	<artifactId>bifconvert</artifactId>
 	<version>1.0</version>
 	<dependencies>
-		<dependency>
+	    <dependency>
+	      <groupId>junit</groupId>
+	      <artifactId>junit</artifactId>
+	      <version>(4,5)</version>
+	      <scope>test</scope>
+	    </dependency>
+    	<dependency>
 		  <groupId>org.antlr</groupId>
 		  <artifactId>antlr4-maven-plugin</artifactId>
 		  <version>(4.0,5.0)</version>
@@ -27,15 +33,6 @@
 	</dependencies>
 	<build>
 	    <plugins>
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-compiler-plugin</artifactId>
-			  <configuration>
-			    <excludes>
-			      <exclude>**/src/grammar/*</exclude>
-			    </excludes>
-			  </configuration>
-			</plugin>
 	      <plugin>
 	        <groupId>org.antlr</groupId>
 	        <artifactId>antlr4-maven-plugin</artifactId>
@@ -47,7 +44,7 @@
 	              <goal>antlr4</goal>
 	            </goals>
 	            <configuration>
-	                <sourceDirectory>**/src/grammar</sourceDirectory>
+	                <sourceDirectory>${project.basedir}/src/grammar</sourceDirectory>
 	                <outputDirectory>${project.build.directory}</outputDirectory>
 	            </configuration>
 	          </execution>
@@ -55,4 +52,8 @@
 	      </plugin>
 	    </plugins>
 	</build>
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 </project>
