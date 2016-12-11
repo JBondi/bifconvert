@@ -8,6 +8,12 @@
 	<version>1.0</version>
 	<dependencies>
 		<dependency>
+		  <groupId>org.antlr</groupId>
+		  <artifactId>antlr4-maven-plugin</artifactId>
+		  <version>(4.0,5.0)</version>
+		  <type>maven-plugin</type>
+		</dependency>
+		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4</artifactId>
 			<version>(4.5,5.0)</version>
@@ -21,25 +27,32 @@
 	</dependencies>
 	<build>
 	    <plugins>
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-compiler-plugin</artifactId>
+			  <configuration>
+			    <excludes>
+			      <exclude>**/src/grammar/*</exclude>
+			    </excludes>
+			  </configuration>
+			</plugin>
 	      <plugin>
 	        <groupId>org.antlr</groupId>
 	        <artifactId>antlr4-maven-plugin</artifactId>
-	        <version>(4.3,5.0)</version>
+	        <version>4.3</version>
 	        <executions>
 	          <execution>
-	            <id>antlr</id>
+	            <id>antlr</id>	            
 	            <goals>
 	              <goal>antlr4</goal>
 	            </goals>
+	            <configuration>
+	                <sourceDirectory>**/src/grammar</sourceDirectory>
+	                <outputDirectory>${project.build.directory}</outputDirectory>
+	            </configuration>
 	          </execution>
 	        </executions>
 	      </plugin>
 	    </plugins>
-		<sourceDirectory>src</sourceDirectory>
-		<resources>
-	    	<resource>
-	    		<directory>target/generated-sources/antlr4</directory>
-	    	</resource>
-	   </resources>
 	</build>
 </project>
