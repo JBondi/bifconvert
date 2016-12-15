@@ -22,7 +22,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 	
 	private Node rootBif;
 	private String context;
-	Document xmlBifDoc;
+	private Document xmlBifDoc;
 	
 	public BifDneListenerImpl() throws ParserConfigurationException {
 		final String NAMESPACE = "http://www.cs.ubc.ca/labs/lci/fopi/ve/XMLBIFv0_3";
@@ -45,13 +45,6 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 	}
 
 	@Override
-	public void exitAssignment(BifDneParser.AssignmentContext ctx){
-		if(ctx.ID().getText().equals("functable")){
-			System.out.println(ctx.fullValue().getText());
-		}
-	}
-	
-	@Override
 	public void exitStruct(BifDneParser.StructContext ctx) {
 		if(ctx.ID(0).getText().equalsIgnoreCase("bnet")){
 			Node netNode  = xmlBifDoc.createElement("NETWORK");
@@ -64,6 +57,78 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 				Node propNode = xmlBifDoc.createElement("PROPERTY");
 				propNode.setTextContent(asCtx.getText());
 				netNode.appendChild(propNode);
+			}
+			
+			//Parsing each node
+			for(BifDneParser.StructContext struct : ctx.struct()){
+				if((struct.ID().size() > 1) && (struct.ID(0).getText().equalsIgnoreCase("node"))){
+					String nodeName = struct.ID(1).getText();
+					Node varNode  = xmlBifDoc.createElement("VARIABLE");
+					Node varName  = xmlBifDoc.createElement("NAME");
+					Node textNode = xmlBifDoc.createTextNode(nodeName);
+					Node defNode  = xmlBifDoc.createElement("DEFINITION");
+					Node defName  = xmlBifDoc.createElement("FOR");
+					String kindName = null;
+					defName.appendChild(xmlBifDoc.createTextNode(nodeName));
+					defNode.appendChild(defName);
+					varName.appendChild(textNode);
+					varNode.appendChild(varName);
+					
+					//Each item in the node
+					for(BifDneParser.AssignmentContext asCtx : struct.assignment()){
+						String asName = asCtx.ID().getText();
+						
+						//Type of node
+						if(asName.equalsIgnoreCase("kind")){
+							kindName = asCtx.fullValue().ID().getText();
+							if(		kindName.equalsIgnoreCase("nature") ||
+									kindName.equalsIgnoreCase("utility") ||
+									kindName.equalsIgnoreCase("decision")){
+								Node kindNode = xmlBifDoc.createAttribute("type");
+								kindNode.setNodeValue(kindName.toLowerCase());
+								varNode.getAttributes().setNamedItem(kindNode);
+							}
+							else{
+								kindName = null;
+							}
+							
+						}
+						
+						//State names
+						else if(asName.equalsIgnoreCase("states")){
+							for(BifDneParser.FullValueContext arrayItem :
+								asCtx.fullValue().array().innerArray().fullValue()){
+								Node outcomeNode = xmlBifDoc.createElement("OUTCOME");
+								Node outcomeText = xmlBifDoc.createTextNode(arrayItem.getText());
+								outcomeNode.appendChild(outcomeText);
+								varNode.appendChild(outcomeNode);
+							}
+						}
+						
+						//Set up the Parents in the DEFINITION node
+						else if(asName.equalsIgnoreCase("parents")){
+							if(asCtx.fullValue().array().innerArray() != null){
+								for(BifDneParser.FullValueContext value : asCtx.fullValue().array().innerArray().fullValue()){
+									if(value.ID() != null){
+										Node valueText = xmlBifDoc.createTextNode(value.ID().getText());
+										Node valueNode = xmlBifDoc.createElement("GIVEN");
+										valueNode.appendChild(valueText);
+										defNode.appendChild(valueNode);
+									}
+								}
+							}
+						}//end parents
+						
+						else if(asName.equalsIgnoreCase("belief")){
+							
+						}
+					}
+					if(kindName != null){
+						netNode.appendChild(varNode);
+						netNode.appendChild(defNode);
+					}
+					
+				}
 			}
 			xmlBifDoc.appendChild(rootBif);
 			Transformer transformer;
