@@ -75,7 +75,9 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 					Node textNode = xmlBifDoc.createTextNode(nodeName);
 					Node defNode  = xmlBifDoc.createElement("DEFINITION");
 					Node defName  = xmlBifDoc.createElement("FOR");
-					String kindName = null;
+					String kindName = "";
+					List<String> states = new ArrayList<String>();
+					List<String> functable = new ArrayList<String>();
 					defName.appendChild(xmlBifDoc.createTextNode(nodeName));
 					defNode.appendChild(defName);
 					varName.appendChild(textNode);
@@ -105,6 +107,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 						else if(asName.equalsIgnoreCase("states")){
 							for(BifDneParser.FullValueContext arrayItem :
 								asCtx.fullValue().array().innerArray().fullValue()){
+								states.add(arrayItem.getText());
 								Node outcomeNode = xmlBifDoc.createElement("OUTCOME");
 								Node outcomeText = xmlBifDoc.createTextNode(arrayItem.getText());
 								outcomeNode.appendChild(outcomeText);
@@ -126,6 +129,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 							}
 						}//end parents
 						
+						//Build probability table
 						else if(asName.equalsIgnoreCase("probs")){
 							if(		asCtx.fullValue().array() != null && 
 									asCtx.fullValue().array().innerArray() != null){
@@ -138,15 +142,45 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 								tableNode.appendChild(tableText);
 								defNode.appendChild(tableNode);
 							}
+						}//end probability table
+						
+						else if (asName.equalsIgnoreCase("functable")){
+							if(asCtx.fullValue().array().innerArray() != null){
+								for(BifDneParser.FullValueContext func : asCtx.fullValue().array().innerArray().fullValue()){
+									functable.add(func.getText());
+								}
+							}
+						}//end functable
+												
+					}//end node values parse
+					
+					//Create a probability table out of the function table (if there is one)
+					if(functable.size() > 0){
+						List<Integer> probs = new ArrayList<Integer>();
+						for(String func : functable){
+							for(String state : states){
+								if(state.equalsIgnoreCase(func))
+									probs.add(1);
+								else
+									probs.add(0);
+							}
 						}
+						String joinedString = probs.stream()
+								.map(i -> Integer.toString(i))
+								.collect(Collectors.joining(","));
+						Node tableText = xmlBifDoc.createTextNode(joinedString);
+						Node tableNode = xmlBifDoc.createElement("TABLE");
+						tableNode.appendChild(tableText);
+						defNode.appendChild(tableNode);						
 					}
-					if(kindName != null){
+					
+					if(kindName != ""){
 						netNode.appendChild(varNode);
 						netNode.appendChild(defNode);
 					}
 					
-				}
-			}
+				}//end single node parse
+			}//end main for-loop
 			xmlBifDoc.appendChild(rootBif);
 			Transformer transformer;
 			try {
