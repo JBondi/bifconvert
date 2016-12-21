@@ -1,6 +1,10 @@
 package org.jb.bifconvert;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,9 +18,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.jb.bifconvert.generated.BifDneBaseListener;
+import org.jb.bifconvert.generated.BifDneLexer;
 import org.jb.bifconvert.generated.BifDneParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 public class BifDneListenerImpl extends BifDneBaseListener {
 	
@@ -119,8 +126,18 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 							}
 						}//end parents
 						
-						else if(asName.equalsIgnoreCase("belief")){
-							
+						else if(asName.equalsIgnoreCase("probs")){
+							if(		asCtx.fullValue().array() != null && 
+									asCtx.fullValue().array().innerArray() != null){
+								List<String> probabilityValues = new ArrayList<String>();
+								getArrayNumbers(asCtx.fullValue().array(), probabilityValues);
+								String joinedString = probabilityValues.stream()
+										.collect(Collectors.joining(","));
+								Node tableText = xmlBifDoc.createTextNode(joinedString);
+								Node tableNode = xmlBifDoc.createElement("TABLE");
+								tableNode.appendChild(tableText);
+								defNode.appendChild(tableNode);
+							}
 						}
 					}
 					if(kindName != null){
@@ -149,7 +166,15 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 		}
 	}
 
-	@Override
-	public void exitFullValue(BifDneParser.FullValueContext ctx){
+	private void getArrayNumbers(BifDneParser.ArrayContext array, List<String> currentNumbers){
+		for(BifDneParser.FullValueContext fvctx : array.innerArray().fullValue()){
+			if(fvctx.array() != null){
+				getArrayNumbers(fvctx.array(), currentNumbers);
+				
+			}
+			else{
+				currentNumbers.add(fvctx.NUM().getText());					
+			}
+		}
 	}
 }
