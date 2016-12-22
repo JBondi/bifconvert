@@ -51,6 +51,10 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 		rootBif.getAttributes().setNamedItemNS(schemaLocationAtt);				
 	}
 
+	public Document getXMLDocument(){
+		return xmlBifDoc;
+	}
+	
 	@Override
 	public void exitStruct(BifDneParser.StructContext ctx) {
 		if(ctx.ID(0).getText().equalsIgnoreCase("bnet")){
@@ -182,21 +186,6 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 				}//end single node parse
 			}//end main for-loop
 			xmlBifDoc.appendChild(rootBif);
-			Transformer transformer;
-			try {
-				transformer = TransformerFactory.newInstance().newTransformer();
-				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-				//initialize StreamResult with File object to save to file
-				StreamResult result = new StreamResult(new StringWriter());
-				DOMSource source = new DOMSource(xmlBifDoc);
-				transformer.transform(source, result);
-				String xmlString = result.getWriter().toString();
-				System.out.println(xmlString);	
-			} catch (TransformerFactoryConfigurationError | TransformerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 

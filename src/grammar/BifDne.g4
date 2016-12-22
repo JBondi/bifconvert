@@ -15,6 +15,6 @@ WS       : [ \t] -> skip;
 NUM 	 : INT|HEX|FLOAT;
 fragment INT		 : [0-9]+;
 fragment HEX		 : '0x' [A-Fa-f0-9]+ ;
-fragment FLOAT 	 : INT? '.' INT ;
+FLOAT 	 : ([0-9]+)? '.' [0-9]+ ;
 COMMENT  :  '//' ~( '\r' | '\n' )*  -> skip;
 EOL		 : [\n\r] -> skip;

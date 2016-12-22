@@ -17,10 +17,11 @@ import org.jb.bifconvert.generated.BifDneParser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
 public class BifDneConvertTest {
 
-	BifDneListener listener;
+	BifDneListenerImpl listener;
 	BifDneParser parser;
 	
 	@Before
@@ -41,6 +42,7 @@ public class BifDneConvertTest {
 	@Test
 	public void test() {
 		parser.struct();
+		Document doc = listener.getXMLDocument();
 	}
 
 }
