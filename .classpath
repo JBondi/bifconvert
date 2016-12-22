@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry excluding="annotations/" kind="src" path="target/generated-sources"/>
-	<classpathentry kind="lib" path="C:/Users/James/.m2/repository/org/antlr/antlr4/4.5.3/antlr4-4.5.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
