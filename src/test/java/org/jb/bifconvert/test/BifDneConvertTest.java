@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.TokenStream;
+import org.jb.bifconvert.BifDneConverter;
 import org.jb.bifconvert.BifDneListenerImpl;
 import org.jb.bifconvert.generated.BifDneLexer;
 import org.jb.bifconvert.generated.BifDneListener;
@@ -40,9 +41,16 @@ public class BifDneConvertTest {
 	}
 
 	@Test
-	public void test() {
-		parser.struct();
+	public void testParse() {
+		parser.dne();
 		Document doc = listener.getXMLDocument();
 	}
 
+	@Test
+	public void testSave() throws Exception{
+		BifDneConverter converter = new BifDneConverter();
+		converter.convert(URLDecoder.decode(getClass().getResource("/Animals.dne").getPath(), "UTF-8"));
+		
+		converter.save( "Converted.xml");
+	}
 }

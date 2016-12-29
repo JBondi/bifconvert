@@ -3,10 +3,11 @@ grammar BifDne;
 @header{
 package org.jb.bifconvert.generated;
 }
-assignment : ID '=' fullValue;
-struct     : ID ID? '{' (assignment ';' | struct ';')* '}';
+dne		   : struct*;
+assignment : ID '=' fullValue ';'?;
+struct     : ID ID? '{' (assignment ';' | struct ';')* '}' ';'?;
 array      : ('(' innerArray  ')') | ('(' ')') ;
-innerArray : (fullValue ',')* fullValue ;
+innerArray : ((fullValue ',')* fullValue) | ((fullValue ',')* fullValue);
 fullValue  : array | struct | ID | QSTRING | NUM ;
 
 ID 		 : [A-Za-z][A-Za-z0-9_]* ;   
