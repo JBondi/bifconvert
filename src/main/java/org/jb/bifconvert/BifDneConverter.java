@@ -134,6 +134,7 @@ public class BifDneConverter {
 			StreamResult result = new StreamResult(new FileOutputStream(outputFile));
 			DOMSource source = new DOMSource(convertedDocument);
 			transformer.transform(source, result);
+			System.out.println("Converted " + outputFile);
 		} catch ( TransformerException e) {
 			e.printStackTrace();
 			throw new IOException("Error transforming XML for saving");

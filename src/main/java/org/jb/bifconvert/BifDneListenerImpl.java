@@ -23,6 +23,7 @@ import org.jb.bifconvert.generated.BifDneParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.emory.mathcs.backport.java.util.Collections;
 
 public class BifDneListenerImpl extends BifDneBaseListener {
@@ -60,7 +61,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 		if(ctx.ID(0).getText().equalsIgnoreCase("bnet")){
 			Node netNode  = xmlBifDoc.createElement("NETWORK");
 			Node nameNode = xmlBifDoc.createElement("NAME");
-			nameNode.setTextContent(ctx.ID(1).getText());
+			nameNode.setTextContent(ctx.ID(1) != null ? ctx.ID(1).getText() : ctx.NUM().getText());
 			netNode.appendChild(nameNode);
 			rootBif.appendChild(netNode);
 			
@@ -73,7 +74,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 			//Parsing each node
 			for(BifDneParser.StructContext struct : ctx.struct()){
 				if((struct.ID().size() > 1) && (struct.ID(0).getText().equalsIgnoreCase("node"))){
-					String nodeName = struct.ID(1).getText();
+					String nodeName = struct.ID(1) != null ? struct.ID(1).getText() : struct.NUM().getText();
 					Node varNode  = xmlBifDoc.createElement("VARIABLE");
 					Node varName  = xmlBifDoc.createElement("NAME");
 					Node textNode = xmlBifDoc.createTextNode(nodeName);
@@ -97,7 +98,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 							if(		kindName.equalsIgnoreCase("nature") ||
 									kindName.equalsIgnoreCase("utility") ||
 									kindName.equalsIgnoreCase("decision")){
-								Node kindNode = xmlBifDoc.createAttribute("type");
+								Node kindNode = xmlBifDoc.createAttribute("TYPE");
 								kindNode.setNodeValue(kindName.toLowerCase());
 								varNode.getAttributes().setNamedItem(kindNode);
 							}
@@ -140,7 +141,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 								List<String> probabilityValues = new ArrayList<String>();
 								getArrayNumbers(asCtx.fullValue().array(), probabilityValues);
 								String joinedString = probabilityValues.stream()
-										.collect(Collectors.joining(","));
+										.collect(Collectors.joining(" "));
 								Node tableText = xmlBifDoc.createTextNode(joinedString);
 								Node tableNode = xmlBifDoc.createElement("TABLE");
 								tableNode.appendChild(tableText);
@@ -171,7 +172,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 						}
 						String joinedString = probs.stream()
 								.map(i -> Integer.toString(i))
-								.collect(Collectors.joining(","));
+								.collect(Collectors.joining(" "));
 						Node tableText = xmlBifDoc.createTextNode(joinedString);
 						Node tableNode = xmlBifDoc.createElement("TABLE");
 						tableNode.appendChild(tableText);
