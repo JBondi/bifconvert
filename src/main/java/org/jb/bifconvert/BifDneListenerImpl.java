@@ -3,6 +3,7 @@ package org.jb.bifconvert;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -49,7 +50,7 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 		rootBif.getAttributes().setNamedItem(versionAtt);
 		rootBif.getAttributes().setNamedItem(namespaceAtt);
 		rootBif.getAttributes().setNamedItemNS(xsiAtt);
-		rootBif.getAttributes().setNamedItemNS(schemaLocationAtt);				
+		//rootBif.getAttributes().setNamedItemNS(schemaLocationAtt);				
 	}
 
 	public Document getXMLDocument(){
@@ -156,8 +157,23 @@ public class BifDneListenerImpl extends BifDneBaseListener {
 								}
 							}
 						}//end functable
-												
+						
 					}//end node values parse
+               for(BifDneParser.StructContext stCtx : struct.struct()){
+                  String structType = stCtx.ID(0).getText();
+                  if(structType.equalsIgnoreCase("visual")){
+                    Optional<BifDneParser.AssignmentContext> center = stCtx.assignment().stream()
+                        .filter(child -> child.ID().getText().equalsIgnoreCase("center"))
+                        .findFirst();
+                        
+                    if(center.isPresent()){
+                       Node propNode = xmlBifDoc.createElement("PROPERTY");
+                       String position = "position = " + center.get().fullValue().array().getText();
+                       propNode.setTextContent(position);
+                       varNode.appendChild(propNode);
+                    }
+                  }
+               }
 					
 					//Create a probability table out of the function table (if there is one)
 					if(functable.size() > 0){

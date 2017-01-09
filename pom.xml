@@ -42,21 +42,34 @@
 	</dependencies>
 	<build>
 	   <plugins>
-	      <plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-jar-plugin</artifactId>
-	        <version>3.0.2</version>
-	        <configuration>
-	          <archive>
-	            <manifest>
-	              <addClasspath>true</addClasspath>
-	              <classpathPrefix>lib</classpathPrefix>
-	              <mainClass>org.jb.bifconvert.BifDneConverter</mainClass>
-	            </manifest>
-	          </archive>
-	        </configuration>
-	      </plugin>
-         <plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<finalName>bifconvert-${project.version}-complete</finalName>
+					<archive>
+					  <manifest>
+						<mainClass>org.jb.bifconvert.BifDneConverter</mainClass>
+					  </manifest>
+					</archive>
+				</configuration>
+				<executions>
+				  <execution>
+					<id>make-assembly</id>
+                                        <!-- bind to the packaging phase -->
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+					</goals>
+				  </execution>
+				</executions>
+			</plugin>
+        <plugin>
 	        <groupId>org.antlr</groupId>
 	        <artifactId>antlr4-maven-plugin</artifactId>
 	        <version>4.6</version>

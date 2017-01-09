@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.TokenStream;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -47,50 +48,57 @@ public class BifDneConverter {
 		Options cmdOptions = new Options();		
 		Option inFileOpt = Option
 				.builder("in")
-				.desc("Input file. A DNE file to convert to XMLBIF")
+				.argName("inputFile")
+				.desc("A DNE file to convert to XMLBIF")
 				.required()
 				.hasArg()
 				.build();
 		Option outFileOpt = Option
 				.builder("out")
-				.desc("Output file. An file to save the XML to. If not specified, output will go to STDOUT")
+				.argName("outputFile")
+				.desc("(optional) An file to save the XML to. If not specified, output will go to STDOUT")
 				.required(false)
 				.hasArg()
 				.build();
+		HelpFormatter helpFormatter = new HelpFormatter();
 		cmdOptions.addOption(inFileOpt);
 		cmdOptions.addOption(outFileOpt);
 		CommandLineParser optionsParser = new DefaultParser();
-		CommandLine cmdLine = optionsParser.parse(cmdOptions, args);
+	   CommandLine cmdLine;
+      BifDneListenerImpl listener = new BifDneListenerImpl();     
+      outStream = System.out;
+	   try{
+   	   cmdLine = optionsParser.parse(cmdOptions, args);
+         if(cmdLine.hasOption("out")){
+            File outputFile = new File(cmdLine.getOptionValue("out"));
+            outStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+         }
+         ANTLRInputStream in = new ANTLRFileStream(cmdLine.getOptionValue("in"));
+         BifDneLexer lexer = new BifDneLexer(in);
+         TokenStream tokens = new BufferedTokenStream(lexer);
+         BifDneParser parser = new BifDneParser(tokens);
+         parser.addParseListener(listener);
+         parser.struct();
+         Transformer transformer;
+         try {
+            transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            //initialize StreamResult with File object to save to file
+            StreamResult result = new StreamResult(outStream);
+            DOMSource source = new DOMSource(listener.getXMLDocument());
+            transformer.transform(source, result);
+            
+         } catch (TransformerFactoryConfigurationError | TransformerException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+	   }
+	   catch(ParseException ex){
+	      helpFormatter.printHelp("bifdneconverter -in <inputfile> -out <outputfile>", cmdOptions);
+	      
+	   }
 		
-		if(cmdLine.hasOption("out")){
-			File outputFile = new File(cmdLine.getOptionValue("out"));
-			outStream = new BufferedOutputStream(new FileOutputStream(outputFile));
-		}
-		else{
-			outStream = System.out;
-		}
-		BifDneListenerImpl listener = new BifDneListenerImpl();		
-		ANTLRInputStream in = new ANTLRFileStream(cmdLine.getOptionValue("in"));
-		BifDneLexer lexer = new BifDneLexer(in);
-		TokenStream tokens = new BufferedTokenStream(lexer);
-		BifDneParser parser = new BifDneParser(tokens);
-		parser.addParseListener(listener);
-		parser.struct();
-		
-		Transformer transformer;
-		try {
-			transformer = TransformerFactory.newInstance().newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-			//initialize StreamResult with File object to save to file
-			StreamResult result = new StreamResult(outStream);
-			DOMSource source = new DOMSource(listener.getXMLDocument());
-			transformer.transform(source, result);
-			
-		} catch (TransformerFactoryConfigurationError | TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 	
